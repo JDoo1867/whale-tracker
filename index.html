@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="description" content="CoinWiki — AI 기반 코인 종목 심층 분석. 백서 자동 분석, VC 투자자, 락업 일정, 고래 지갑 추적을 한 곳에서 확인하세요.">
+<meta name="keywords" content="코인 분석, 암호화폐, 비트코인, 이더리움, 솔라나, 토크노믹스, 락업, VC 투자, 코인위키">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="CoinWiki — AI 코인 분석">
+<meta property="og:description" content="백서 자동 분석 · VC 투자자 · 락업 일정 · 고래 지갑 추적">
+<meta property="og:type" content="website">
+<title>CoinWiki — AI 코인 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#07090F;--surface:#0E1117;--card:#131720;
+  --border:rgba(255,255,255,0.06);
+  --blue:#4F8EF7;--blue2:#7B61FF;--cyan:#00D4FF;
+  --green:#00E5A0;--red:#FF4D6D;--gold:#FFB547;
+  --text:#F0F2F8;--muted:rgba(240,242,248,0.45);
+}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;overflow-x:hidden}
+.bg-mesh{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 20% 20%,rgba(79,142,247,0.07) 0%,transparent 50%),
+  radial-gradient(ellipse at 80% 80%,rgba(123,97,255,0.07) 0%,transparent 50%);
+}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 48px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(7,9,15,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{font-size:20px;font-weight:800;cursor:pointer;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:13px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.lang-toggle{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:100px;overflow:hidden}
+.lang-btn{padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif}
+.lang-btn.active{background:var(--blue);color:white}
+.nav-cta{padding:8px 18px;background:var(--blue);border:none;border-radius:100px;font-size:12px;font-weight:600;color:white;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:opacity .2s}
+.nav-cta:hover{opacity:.85}
+
+/* PAGES */
+.page{display:none;min-height:100vh;padding-top:64px;position:relative;z-index:1}
+.page.active{display:block}
+
+/* ===== HOME PAGE ===== */
+.hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:60px 24px;text-align:center;
+}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.25);
+  border-radius:100px;padding:6px 16px;font-size:12px;font-weight:500;
+  color:var(--blue);margin-bottom:32px;animation:fadeUp .6s ease forwards;
+}
+.tag-dot{width:6px;height:6px;background:var(--blue);border-radius:50%;animation:pulse 2s infinite}
+.hero-title{font-size:clamp(32px,5vw,80px);font-weight:800;line-height:1.05;
+  letter-spacing:-1px;margin-bottom:20px;
+  animation:fadeUp .6s ease forwards .1s;opacity:0;
+}
+.line2{background:linear-gradient(135deg,var(--blue),var(--cyan),var(--blue2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-sub{font-size:clamp(13px,2vw,17px);color:var(--muted);font-weight:300;
+  line-height:1.7;margin-bottom:40px;max-width:560px;
+  animation:fadeUp .6s ease forwards .2s;opacity:0;
+}
+.hero-search{width:100%;max-width:660px;animation:fadeUp .6s ease forwards .3s;opacity:0}
+.search-wrap{display:flex;background:var(--card);border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;transition:border-color .3s,box-shadow .3s;
+}
+.search-wrap:focus-within{border-color:rgba(79,142,247,0.4);box-shadow:0 0 0 4px rgba(79,142,247,0.08)}
+.search-input{flex:1;background:transparent;border:none;padding:16px 20px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:var(--text);outline:none;min-width:0;
+}
+.search-input::placeholder{color:var(--muted)}
+.search-btn{margin:8px;padding:10px 22px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px;font-weight:600;color:white;cursor:pointer;
+  white-space:nowrap;transition:opacity .2s;flex-shrink:0;
+}
+.search-btn:hover{opacity:.9}
+.search-btn:disabled{opacity:.4;cursor:not-allowed}
+.hero-hint{font-size:11px;color:var(--muted);margin-top:14px;
+  animation:fadeUp .6s ease forwards .4s;opacity:0;
+}
+
+/* AD SLOT */
+.ad-slot{background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.08);
+  border-radius:12px;padding:16px;text-align:center;margin-bottom:12px;
+}
+.ad-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.15);margin-bottom:6px}
+.ad-placeholder{font-size:11px;color:rgba(255,255,255,0.08)}
+
+/* LOADING */
+.loading{display:none;text-align:center;padding:80px 24px;position:relative;z-index:1}
+.loading.show{display:block}
+.spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--blue);
+  border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;
+}
+.load-text{font-size:13px;color:var(--muted)}
+.load-step{font-size:11px;color:var(--blue);margin-top:6px;font-weight:500;animation:blink 1.5s ease-in-out infinite}
+
+/* RESULT */
+.result{display:none;max-width:1060px;margin:0 auto;padding:32px 24px 80px;position:relative;z-index:1}
+.result.show{display:block;animation:fadeUp .5s ease}
+.coin-header{display:flex;align-items:center;gap:14px;
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:22px 24px;margin-bottom:14px;flex-wrap:wrap;
+}
+.coin-img{width:48px;height:48px;border-radius:50%;border:2px solid var(--border);flex-shrink:0}
+.coin-name{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.coin-sym{font-size:12px;color:var(--muted);margin-top:2px}
+.coin-rank-box{display:flex;flex-direction:column;align-items:center;
+  background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.15);
+  border-radius:12px;padding:8px 14px;margin-left:auto;
+}
+.rank-num{font-size:20px;font-weight:700;color:var(--blue)}
+.rank-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.coin-price-box{text-align:right}
+.coin-price{font-size:26px;font-weight:700;letter-spacing:-1px}
+.coin-change{font-size:12px;font-weight:500;margin-top:4px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+.card-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:500}
+.card-val{font-size:19px;font-weight:600}
+.card-val.blue{color:var(--blue)}
+.card-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sk{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.sv{font-size:14px;font-weight:600}
+.sv.blue{color:var(--blue)}
+.prog-wrap{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:6px}
+.prog-track{height:3px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:100px;transition:width 1.2s ease}
+.ai-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:12px;position:relative;overflow:hidden}
+.ai-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--blue2))}
+.ai-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ai-pulse{width:8px;height:8px;background:var(--blue);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0}
+.ai-ttl{font-size:14px;font-weight:600}
+.ai-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.ai-content{font-size:13px;line-height:1.85;color:rgba(240,242,248,0.8);white-space:pre-wrap}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.chart-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.chart-tabs{display:flex;gap:4px}
+.chart-tab{padding:5px 12px;font-size:11px;font-weight:600;border:1.5px solid var(--border);border-radius:100px;
+  background:transparent;color:var(--muted);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .2s}
+.chart-tab.active{background:var(--blue);border-color:var(--blue);color:white}
+.chart-wrap{position:relative;height:220px}
+.tv-wrap{border-radius:12px;overflow:hidden;margin-bottom:12px}
+.chart-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.cstat{background:var(--surface);border-radius:10px;padding:10px 12px}
+.cstat-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.cstat-val{font-size:14px;font-weight:700}
+.ai-chart-card{background:rgba(79,142,247,0.04);border:1px solid rgba(79,142,247,0.15);border-radius:16px;padding:20px;margin-bottom:12px}
+.ai-chart-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.ai-chart-title{font-size:13px;font-weight:700}
+.ai-chart-content{font-size:13px;line-height:1.85;color:rgba(240,242,248,0.8);white-space:pre-wrap}
+@media(max-width:600px){.chart-stats{grid-template-columns:1fr 1fr}}
+.disclaimer{background:rgba(255,77,109,0.05);border:1px solid rgba(255,77,109,0.15);
+  border-radius:12px;padding:14px 18px;margin-top:12px;
+  font-size:11px;line-height:1.7;color:rgba(255,77,109,0.7);
+}
+.error{display:none;text-align:center;padding:60px;font-size:14px;color:var(--red)}
+.error.show{display:block}
+
+/* FEATURES & HOW */
+.features{padding:80px 48px;max-width:1060px;margin:0 auto}
+.how{padding:40px 48px 80px;max-width:1060px;margin:0 auto}
+.section-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:14px;font-weight:500}
+.section-title{font-size:clamp(24px,4vw,40px);font-weight:700;margin-bottom:36px;letter-spacing:-.5px}
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.feat-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 22px;transition:border-color .3s,transform .3s}
+.feat-card:hover{border-color:rgba(79,142,247,0.3);transform:translateY(-4px)}
+.feat-icon{width:40px;height:40px;border-radius:12px;background:rgba(79,142,247,0.1);
+  border:1px solid rgba(79,142,247,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:16px;
+}
+.feat-title{font-size:14px;font-weight:700;margin-bottom:8px}
+.feat-desc{font-size:12px;color:var(--muted);line-height:1.7}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.how-card{padding:32px 26px;border:1px solid var(--border);border-radius:20px;position:relative}
+.how-num{font-size:48px;font-weight:800;color:rgba(79,142,247,0.07);position:absolute;top:14px;right:20px;line-height:1}
+.how-title{font-size:16px;font-weight:700;margin-bottom:8px}
+.how-desc{font-size:12px;color:var(--muted);line-height:1.7}
+
+/* ===== INNER PAGES ===== */
+.inner-page{max-width:760px;margin:0 auto;padding:60px 24px 100px}
+.inner-title{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+.inner-sub{font-size:14px;color:var(--muted);margin-bottom:48px;line-height:1.6}
+.inner-section{margin-bottom:40px}
+.inner-h2{font-size:18px;font-weight:700;margin-bottom:14px;color:var(--text)}
+.inner-h3{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--blue)}
+.inner-p{font-size:14px;line-height:1.9;color:var(--muted);margin-bottom:14px}
+.inner-ul{padding-left:20px;margin-bottom:14px}
+.inner-ul li{font-size:14px;line-height:1.9;color:var(--muted);margin-bottom:6px}
+.inner-divider{height:1px;background:var(--border);margin:32px 0}
+.inner-date{font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:40px}
+
+/* CONTACT FORM */
+.contact-form{display:flex;flex-direction:column;gap:16px}
+.form-group label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+.form-group input,.form-group textarea,.form-group select{
+  width:100%;background:var(--surface);border:1.5px solid var(--border);
+  border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px;color:var(--text);outline:none;transition:border-color .2s;
+}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--blue)}
+.form-group input::placeholder,.form-group textarea::placeholder{color:var(--muted)}
+.form-group textarea{height:120px;resize:none}
+.form-submit{padding:14px 32px;background:var(--blue);border:none;border-radius:12px;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;
+  color:white;cursor:pointer;transition:opacity .2s;align-self:flex-start;
+}
+.form-submit:hover{opacity:.85}
+.form-success{display:none;background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.3);
+  border-radius:12px;padding:16px;font-size:13px;color:var(--green);margin-top:8px;
+}
+
+/* COIN ARTICLES */
+.articles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.article-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:24px;cursor:pointer;transition:border-color .3s,transform .3s;
+}
+.article-card:hover{border-color:rgba(79,142,247,0.3);transform:translateY(-3px)}
+.article-tag{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--blue);margin-bottom:10px;
+}
+.article-title{font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.3}
+.article-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.article-meta{font-size:10px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:48px;position:relative;z-index:1}
+.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand{}
+.footer-logo{font-size:20px;font-weight:800;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:12px;
+}
+.footer-tagline{font-size:12px;color:var(--muted);line-height:1.7;max-width:220px}
+.footer-col-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.footer-links{display:flex;flex-direction:column;gap:10px}
+.footer-links a{font-size:13px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;
+  padding-top:24px;border-top:1px solid var(--border);flex-wrap:wrap;gap:12px;
+}
+.footer-copy{font-size:11px;color:var(--muted)}
+.footer-disclaimer{font-size:10px;color:rgba(240,242,248,0.25);max-width:500px;line-height:1.6}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .7s ease,transform .7s ease}
+.reveal.vis{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(79,142,247,0.4)}50%{box-shadow:0 0 0 8px rgba(79,142,247,0)}}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* MOBILE */
+@media(max-width:768px){
+  nav{padding:0 16px;height:56px}
+  .nav-links{display:none}
+  .nav-cta{padding:7px 12px;font-size:11px}
+  .hero{padding:40px 16px}
+  .hero-title{font-size:clamp(28px,8vw,40px);letter-spacing:-.5px}
+  .result{padding:20px 16px 60px}
+  .g4{grid-template-columns:1fr 1fr}
+  .g2{grid-template-columns:1fr}
+  .features,.how{padding:48px 16px}
+  .feat-grid{grid-template-columns:1fr 1fr}
+  .how-grid{grid-template-columns:1fr}
+  footer{padding:32px 16px}
+  .footer-top{grid-template-columns:1fr 1fr;gap:28px}
+  .inner-page{padding:40px 16px 80px}
+  .articles-grid{grid-template-columns:1fr}
+  .coin-header{flex-direction:column;align-items:flex-start}
+  .coin-price-box{text-align:left}
+  .coin-rank-box{margin-left:0}
+}
+@media(max-width:480px){
+  .feat-grid{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">CoinWiki</div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home">홈</a></li>
+    <li><a onclick="showPage('guide')" id="nav-guide">코인 가이드</a></li>
+    <li><a onclick="showPage('whale')" id="nav-whale" style="color:#00E5A0">🐋 고래 추적</a></li>
+    <li><a onclick="showPage('about')" id="nav-about">소개</a></li>
+    <li><a onclick="showPage('contact')" id="nav-contact">문의</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnKo" onclick="setLang('ko')">KR</button>
+      <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="nav-cta" id="navCta" onclick="showPage('home')">분석하기</button>
+  </div>
+</nav>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-tag"><span class="tag-dot"></span><span id="heroTag">백서 기반 AI 코인 분석</span></div>
+    <h1 class="hero-title">
+      <div id="heroT1">코인 투자 전,</div>
+      <div class="line2" id="heroT2">진짜 정보를</div>
+      <div id="heroT3">확인하세요</div>
+    </h1>
+    <p class="hero-sub" id="heroSub">백서 자동 분석 · VC 투자자 · 락업 일정 · 고래 지갑 추적</p>
+    <div class="hero-search">
+      <div class="search-wrap">
+        <input class="search-input" id="searchInput" placeholder="코인 이름 입력 (예: Bitcoin, Ethereum, Solana...)" onkeydown="if(event.key==='Enter')analyze()">
+        <button class="search-btn" id="searchBtn" onclick="analyze()">분석 시작</button>
+      </div>
+      <p class="hero-hint" id="heroHint">신용카드 불필요 · 즉시 시작</p>
+    </div>
+  </section>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="load-text" id="loadText">분석 중...</div>
+    <div class="load-step" id="loadStep"></div>
+  </div>
+  <div class="error" id="errorBox"></div>
+
+  <div class="result" id="result">
+    <div class="ad-slot"><div class="ad-label" id="adLbl1">광고</div><div class="ad-placeholder">728×90 — Bitmedia / Google AdSense</div></div>
+    <div class="coin-header reveal">
+      <img class="coin-img" id="coinImg" src="" alt="" style="display:none">
+      <div id="coinImgPh" style="width:48px;height:48px;border-radius:50%;background:var(--card);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🪙</div>
+      <div><div class="coin-name" id="coinName"></div><div class="coin-sym" id="coinSym"></div></div>
+      <div class="coin-rank-box" id="coinRankBox" style="display:none"><div class="rank-num" id="coinRank"></div><div class="rank-lbl" id="rankLbl">시총 순위</div></div>
+      <div class="coin-price-box"><div class="coin-price" id="coinPrice"></div><div class="coin-change" id="coinChange"></div></div>
+    </div>
+    <div class="g4">
+      <div class="card reveal"><div class="card-label" id="lMcap">시가총액</div><div class="card-val blue" id="vMcap"></div><div class="card-sub" id="vFdv"></div></div>
+      <div class="card reveal d1"><div class="card-label" id="lVol">24h 거래량</div><div class="card-val" id="vVol"></div><div class="card-sub" id="vVolR"></div></div>
+      <div class="card reveal d2"><div class="card-label" id="lAth">역대 최고가</div><div class="card-val" id="vAth"></div><div class="card-sub" id="vAthC" style="color:var(--red)"></div></div>
+      <div class="card reveal d3"><div class="card-label" id="lDev">개발 활동</div><div class="card-val" id="vStars"></div><div class="card-sub" id="vCommits"></div></div>
+    </div>
+    <div class="g2">
+      <div class="card reveal">
+        <div class="card-label" id="lSupply">유통량 분석</div>
+        <div class="stat-grid">
+          <div><div class="sk" id="lCirc">유통 공급량</div><div class="sv blue" id="vCirc"></div></div>
+          <div><div class="sk" id="lTotal">총 발행량</div><div class="sv" id="vTotal"></div></div>
+          <div><div class="sk" id="lMax">최대 공급량</div><div class="sv" id="vMax"></div></div>
+          <div><div class="sk" id="lPct">유통률</div><div class="sv blue" id="vPct"></div></div>
+        </div>
+        <div class="prog-wrap" id="progWrap" style="display:none">
+          <div class="prog-labels"><span id="lProgL">유통 중</span><span id="vProgPct"></span></div>
+          <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card reveal d1">
+        <div class="card-label" id="lPrice">가격 변동</div>
+        <div class="stat-grid">
+          <div><div class="sk" id="l7d">7일</div><div class="sv" id="v7d"></div></div>
+          <div><div class="sk" id="l30d">30일</div><div class="sv" id="v30d"></div></div>
+          <div><div class="sk" id="lLow">24h 저가</div><div class="sv" id="vLow"></div></div>
+          <div><div class="sk" id="lHigh">24h 고가</div><div class="sv" id="vHigh"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ad-slot"><div class="ad-label" id="adLbl2">광고</div><div class="ad-placeholder">300×250 — Rectangle Ad</div></div>
+
+    <!-- PRICE CHART -->
+    <div class="chart-card reveal">
+      <div class="chart-header">
+        <div class="chart-title">📈 <span id="chartTitle">가격 차트</span></div>
+        <div class="chart-tabs">
+          <button class="chart-tab active" onclick="loadChart('7')">7일</button>
+          <button class="chart-tab" onclick="loadChart('30')">30일</button>
+          <button class="chart-tab" onclick="loadChart('90')">90일</button>
+          <button class="chart-tab" onclick="loadChart('365')">1년</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="priceChart"></canvas>
+      </div>
+      <div class="chart-stats">
+        <div class="cstat"><div class="cstat-label" id="csl1">기간 최고</div><div class="cstat-val" id="csHigh">—</div></div>
+        <div class="cstat"><div class="cstat-label" id="csl2">기간 최저</div><div class="cstat-val" id="csLow">—</div></div>
+        <div class="cstat"><div class="cstat-label" id="csl3">기간 변동</div><div class="cstat-val" id="csChange">—</div></div>
+        <div class="cstat"><div class="cstat-label" id="csl4">평균 거래량</div><div class="cstat-val" id="csVol">—</div></div>
+      </div>
+    </div>
+
+    <!-- AI CHART ANALYSIS -->
+    <div class="ai-chart-card reveal">
+      <div class="ai-chart-head">
+        <div class="ai-pulse"></div>
+        <div class="ai-chart-title" id="aiChartTitle">AI 차트 패턴 분석</div>
+      </div>
+      <div class="ai-chart-content" id="aiChartContent">차트 로딩 후 분석이 시작됩니다...</div>
+    </div>
+    <div class="ai-card reveal">
+      <div class="ai-head"><div class="ai-pulse"></div><div><div class="ai-ttl" id="aiTitle">AI 심층 분석</div><div class="ai-sub" id="aiSubTxt">백서 기반 · 팀 · VC · 락업 · 리스크</div></div></div>
+      <div class="ai-content" id="aiContent"></div>
+    </div>
+    <div class="disclaimer" id="discText">⚠ 본 분석은 참고용이며 투자 조언이 아닙니다. 투자 결정 전 반드시 공식 문서를 확인하세요.</div>
+  </div>
+
+  <section class="features" id="features">
+    <div class="reveal"><p class="section-label">Features</p></div>
+    <h2 class="section-title reveal" id="featTitle">왜 코인위키인가요?</h2>
+    <div class="feat-grid" id="featGrid"></div>
+  </section>
+  <section class="how">
+    <div class="reveal"><p class="section-label">How It Works</p></div>
+    <h2 class="section-title reveal" id="howTitle">이렇게 사용하세요</h2>
+    <div class="how-grid" id="howGrid"></div>
+  </section>
+</div>
+
+<!-- ===== GUIDE PAGE ===== -->
+<div class="page" id="page-guide">
+  <div class="inner-page">
+    <p class="section-label">COIN GUIDE</p>
+    <h1 class="inner-title" id="guideTitle">코인 투자 가이드</h1>
+    <p class="inner-sub" id="guideSub">코인 투자 전 반드시 알아야 할 핵심 정보들을 정리했습니다.</p>
+    <div class="ad-slot"><div class="ad-label">광고</div><div class="ad-placeholder">728×90</div></div>
+    <div class="articles-grid" id="articlesGrid"></div>
+    <div class="ad-slot" style="margin-top:24px"><div class="ad-label">광고</div><div class="ad-placeholder">300×250</div></div>
+  </div>
+</div>
+
+<!-- ===== WHALE PAGE ===== -->
+<div class="page" id="page-whale">
+<style>
+.wh-hero{padding:40px 48px 20px;max-width:1200px;margin:0 auto}
+.wh-topbar{display:flex;align-items:center;gap:12px;padding:8px 48px;background:rgba(14,17,23,.9);border-bottom:1px solid var(--border);flex-wrap:wrap;position:sticky;top:64px;z-index:50;backdrop-filter:blur(10px)}
+.wh-stat{display:flex;flex-direction:column;gap:1px;border-left:1px solid var(--border);padding-left:10px}
+.wh-stat .wsl{font-size:9px;color:var(--muted)}
+.wh-stat .wsv{font-size:13px;font-weight:700;color:var(--text)}
+.wsv.wg{color:var(--green)!important}.wsv.wr{color:var(--red)!important}.wsv.wy{color:var(--gold)!important}.wsv.wc{color:var(--cyan)!important}.wsv.wp{color:#B388FF!important}
+.wh-pulse{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:11px}
+.wh-dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.wh-dot.on{background:var(--green);box-shadow:0 0 7px var(--green);animation:pulse 1.5s infinite}
+.wh-dot.spin{background:var(--gold);box-shadow:0 0 7px var(--gold);animation:pulse .5s infinite}
+.wh-bar{display:flex;gap:5px;align-items:center;padding:7px 48px;border-bottom:1px solid var(--border);flex-wrap:wrap;background:var(--bg)}
+.wh-ctab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:6px 12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;transition:all .2s}
+.wh-ctab.on{color:var(--green);border-bottom-color:var(--green)}
+.wh-ctab.btcon.on{color:var(--gold);border-bottom-color:var(--gold)}
+.wh-ctab.solon.on{color:#B388FF;border-bottom-color:#B388FF}
+.wh-ctab.eggon.on{color:#FF8C42;border-bottom-color:#FF8C42}
+.wh-sep{width:1px;height:18px;background:var(--border);margin:0 3px}
+.wh-sf{background:transparent;border:1px solid var(--border);color:var(--muted);padding:3px 9px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:500;border-radius:100px;transition:all .15s}
+.wh-sf.on{background:rgba(0,229,160,.1);border-color:var(--green);color:var(--green)}
+.wh-sf.on.ss{background:rgba(255,77,109,.1);border-color:var(--red);color:var(--red)}
+.wh-sf.on.sc{background:rgba(0,212,255,.1);border-color:var(--cyan);color:var(--cyan)}
+.wh-sf.on.sp{background:rgba(179,136,255,.1);border-color:#B388FF;color:#B388FF}
+.wh-sf.on.sy{background:rgba(255,181,71,.1);border-color:var(--gold);color:var(--gold)}
+.wh-sf.on.so{background:rgba(255,140,66,.1);border-color:#FF8C42;color:#FF8C42}
+.wh-prog{height:2px;background:var(--border)}
+.wh-pbar{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));width:0%;transition:width .3s}
+.wh-layout{display:flex;min-height:500px}
+.wh-lp{width:210px;flex-shrink:0;border-right:1px solid var(--border);background:var(--surface)}
+.wh-lhdr{padding:7px 12px;border-bottom:1px solid var(--border);font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;display:flex;justify-content:space-between}
+.wh-wi{padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s}
+.wh-wi:hover{background:rgba(255,255,255,.03)}
+.wh-wn{font-size:11px;color:var(--text);font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.wh-wa{font-size:9px;color:var(--muted);margin-top:1px}
+.wh-wt{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
+.wh-tg{font-size:8px;padding:1px 5px;border-radius:4px}
+.wh-tg.exchange{background:rgba(79,142,247,.1);color:var(--blue)}
+.wh-tg.whale,.wh-tg.smart{background:rgba(0,229,160,.1);color:var(--green)}
+.wh-tg.foundation{background:rgba(255,181,71,.1);color:var(--gold)}
+.wh-tg.korean{background:rgba(255,77,109,.1);color:var(--red)}
+.wh-cd{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.wh-cd.eth{background:#627EEA}.wh-cd.btc{background:var(--gold)}.wh-cd.sol{background:#9945FF}.wh-cd.egg{background:#FF8C42}
+.wh-fc{flex:1;min-height:400px}
+.wh-feed{padding:10px;display:flex;flex-direction:column;gap:5px}
+.wh-empty{padding:80px 24px;text-align:center;color:var(--muted)}
+.wh-card{background:var(--card);border:1px solid var(--border);border-radius:12px;border-left:3px solid var(--border);padding:12px 16px;transition:border-color .2s}
+.wh-card.buy{border-left-color:var(--green)}.wh-card.sell{border-left-color:var(--red)}
+.wh-card.sleep{border-left-color:var(--cyan)}.wh-card.newwhale{border-left-color:#B388FF}
+.wh-card.foundation{border-left-color:var(--gold)}.wh-card.flow{border-left-color:var(--blue)}.wh-card.acc{border-left-color:#FF8C42}
+.wh-ch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.wh-cn{font-size:13px;font-weight:700}
+.wh-cn.buy{color:var(--green)}.wh-cn.sell{color:var(--red)}.wh-cn.sleep{color:var(--cyan)}
+.wh-cn.newwhale{color:#B388FF}.wh-cn.foundation{color:var(--gold)}.wh-cn.flow{color:var(--blue)}.wh-cn.acc{color:#FF8C42}
+.wh-cm{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.wh-ct{font-size:10px;color:var(--muted)}
+.wh-cb{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+.wh-cb.eth{background:rgba(98,126,234,.15);color:#627EEA}.wh-cb.btc{background:rgba(255,181,71,.15);color:var(--gold)}
+.wh-cb.sol{background:rgba(153,69,255,.15);color:#9945FF}.wh-cb.egg{background:rgba(255,140,66,.15);color:#FF8C42}
+.wh-body{display:flex;gap:14px;align-items:flex-start}
+.wh-ac{flex-shrink:0;min-width:110px}
+.wh-am{font-size:18px;font-weight:800;line-height:1}
+.wh-am.buy{color:var(--green)}.wh-am.sell{color:var(--red)}.wh-am.sleep{color:var(--cyan)}
+.wh-am.newwhale{color:#B388FF}.wh-am.foundation{color:var(--gold)}.wh-am.flow{color:var(--blue)}.wh-am.acc{color:#FF8C42}
+.wh-usd{font-size:10px;color:var(--muted);margin-top:2px}
+.wh-badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:100px;margin-top:5px;font-weight:600}
+.wh-badge.buy{background:rgba(0,229,160,.1);color:var(--green);border:1px solid rgba(0,229,160,.3)}
+.wh-badge.sell{background:rgba(255,77,109,.1);color:var(--red);border:1px solid rgba(255,77,109,.3)}
+.wh-badge.sleep{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.3)}
+.wh-badge.newwhale{background:rgba(179,136,255,.1);color:#B388FF;border:1px solid rgba(179,136,255,.3)}
+.wh-badge.foundation{background:rgba(255,181,71,.1);color:var(--gold);border:1px solid rgba(255,181,71,.3)}
+.wh-badge.flow{background:rgba(79,142,247,.1);color:var(--blue);border:1px solid rgba(79,142,247,.3)}
+.wh-badge.acc{background:rgba(255,140,66,.1);color:#FF8C42;border:1px solid rgba(255,140,66,.3)}
+.wh-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.wh-fl{display:flex;align-items:center;gap:5px;font-size:10px;flex-wrap:wrap}
+.wh-addr{font-size:10px;color:var(--muted)}
+.wh-ai{background:var(--surface);border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.7;color:rgba(240,242,248,.75);margin-top:3px;border-left:2px solid var(--border)}
+.wh-ai.buy{border-color:var(--green)}.wh-ai.sell{border-color:var(--red)}.wh-ai.sleep{border-color:var(--cyan)}
+.wh-ai.newwhale{border-color:#B388FF}.wh-ai.foundation{border-color:var(--gold)}.wh-ai.flow{border-color:var(--blue)}.wh-ai.acc{border-color:#FF8C42}
+.wh-link{font-size:10px;color:var(--muted);text-decoration:none;margin-top:3px;display:inline-block}
+.wh-link:hover{color:var(--cyan)}
+@media(max-width:768px){.wh-hero,.wh-topbar,.wh-bar{padding-left:16px;padding-right:16px}.wh-lp{display:none}}
+</style>
+
+<div class="wh-hero">
+  <p class="section-label">LIVE TRACKING</p>
+  <h2 style="font-size:clamp(22px,3vw,34px);font-weight:800;margin-bottom:8px">🐋 고래 <span style="background:linear-gradient(135deg,#00E5A0,#00D4FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent">실시간 추적</span></h2>
+  <p style="font-size:13px;color:var(--muted);line-height:1.7;max-width:580px">BTC · ETH · SOL · EGG 멀티체인 고래 감시 시스템. 재단 매도, 수면 지갑 활성화, 신규 큰손 진입, 매집 패턴을 AI가 실시간 분석합니다.</p>
+  <div style="display:flex;align-items:center;gap:10px;background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.2);border-radius:10px;padding:10px 16px;margin-top:14px;max-width:560px">
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;flex-shrink:0"></div>
+    <span style="font-size:12px;color:var(--muted)">텔레그램 실시간 알림:</span>
+    <span style="font-size:12px;font-weight:600;color:var(--green);cursor:pointer" onclick="whOpenCfg()">채널 설정 후 활성화</span>
+    <span style="font-size:10px;color:var(--muted);margin-left:auto">유료 실시간 · 무료 1시간 지연</span>
+  </div>
+</div>
+
+<div class="wh-topbar">
+  <div class="wh-stat"><span class="wsl">전체감지</span><span class="wsv wg" id="wst-total">0</span></div>
+  <div class="wh-stat"><span class="wsl">⚠ 재단매도</span><span class="wsv wy" id="wst-found">0</span></div>
+  <div class="wh-stat"><span class="wsl">🔴 매도신호</span><span class="wsv wr" id="wst-sell">0</span></div>
+  <div class="wh-stat"><span class="wsl">🟢 매수/매집</span><span class="wsv wg" id="wst-buy">0</span></div>
+  <div class="wh-stat"><span class="wsl">💤 수면지갑</span><span class="wsv wc" id="wst-sleep">0</span></div>
+  <div class="wh-stat"><span class="wsl">🆕 신규고래</span><span class="wsv wp" id="wst-new">0</span></div>
+  <div class="wh-pulse">
+    <div class="wh-dot" id="wh-dot"></div>
+    <span id="wh-ptxt" style="color:var(--muted);font-size:11px">초기화중...</span>
+    <button onclick="whOpenCfg()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:10px;font-family:'Plus Jakarta Sans',sans-serif">⚙ TG 설정</button>
+  </div>
+</div>
+
+<div class="wh-bar">
+  <button class="wh-ctab on" onclick="whSetChain('all',this)">ALL</button>
+  <button class="wh-ctab btcon" onclick="whSetChain('btc',this)">₿ BTC</button>
+  <button class="wh-ctab" onclick="whSetChain('eth',this)">Ξ ETH</button>
+  <button class="wh-ctab eggon" onclick="whSetChain('egg',this)">🥚 EGG</button>
+  <div class="wh-sep"></div>
+  <button class="wh-sf on" onclick="whSetSig('all',this)">전체</button>
+  <button class="wh-sf" onclick="whSetSig('buy',this)">🟢 매수</button>
+  <button class="wh-sf ss" onclick="whSetSig('sell',this)">🔴 매도</button>
+  <button class="wh-sf so" onclick="whSetSig('acc',this)">🟠 매집</button>
+  <button class="wh-sf sc" onclick="whSetSig('sleep',this)">💤 수면지갑</button>
+  <button class="wh-sf sp" onclick="whSetSig('newwhale',this)">🆕 신규고래</button>
+  <button class="wh-sf sy" onclick="whSetSig('foundation',this)">⚠ 재단</button>
+</div>
+<div class="wh-prog"><div class="wh-pbar" id="wh-pbar"></div></div>
+
+<div class="wh-layout">
+  <div class="wh-lp">
+    <div class="wh-lhdr"><span>추적 지갑</span><span id="wh-wcount" style="color:var(--green)">-</span></div>
+    <div id="wh-wlist"><div style="padding:16px 12px;font-size:11px;color:var(--muted)">조회중...</div></div>
+  </div>
+  <div class="wh-fc">
+    <div class="wh-feed" id="wh-feed">
+      <div class="wh-empty" id="wh-empty"><p style="font-size:36px;opacity:.3">🐋</p><p style="font-size:13px;margin-top:8px">스캔 시작 대기중...</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- TG Modal -->
+<div id="wh-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:460px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:700">⚙ 텔레그램 설정</span><button onclick="whCloseCfg()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button></div>
+    <div style="display:flex;flex-direction:column;gap:5px"><label style="font-size:10px;color:var(--muted)">봇 토큰</label><input id="wh-m-bot" type="text" placeholder="@BotFather에서 발급" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text);outline:none;width:100%"></div>
+    <div style="display:flex;flex-direction:column;gap:5px"><label style="font-size:10px;color:var(--muted)">무료채널 Chat ID (1시간 지연)</label><div style="display:flex;gap:6px"><input id="wh-m-free" type="text" placeholder="-1001234..." style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text);outline:none;flex:1"><button onclick="whTestTg('free')" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-family:'Plus Jakarta Sans',sans-serif">테스트</button></div></div>
+    <div style="display:flex;flex-direction:column;gap:5px"><label style="font-size:10px;color:var(--muted)">유료채널 Chat ID (실시간)</label><div style="display:flex;gap:6px"><input id="wh-m-paid" type="text" placeholder="-1009876..." style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text);outline:none;flex:1"><button onclick="whTestTg('paid')" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px 12px;border-radius:8px;cursor:pointer;font-size:11px;font-family:'Plus Jakarta Sans',sans-serif">테스트</button></div></div>
+    <button onclick="whSaveCfg()" style="background:linear-gradient(135deg,var(--blue),var(--blue2));border:none;border-radius:10px;padding:11px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:white;cursor:pointer">✓ 저장</button>
+  </div>
+</div>
+</div>
+
+<!-- ===== ABOUT PAGE ===== -->
+<div class="page" id="page-about">
+  <div class="inner-page">
+    <p class="section-label">ABOUT</p>
+    <h1 class="inner-title" id="aboutTitle">코인위키 소개</h1>
+    <div class="inner-date" id="aboutDate">마지막 업데이트: 2026년 1월 1일</div>
+    <div class="ad-slot"><div class="ad-label">광고</div><div class="ad-placeholder">728×90</div></div>
+    <div class="inner-section">
+      <h2 class="inner-h2" id="a1t">코인위키란?</h2>
+      <p class="inner-p" id="a1p1">코인위키(CoinWiki)는 AI 기술을 활용하여 암호화폐 프로젝트의 핵심 정보를 자동으로 분석하고 제공하는 정보 플랫폼입니다. 투자 결정에 필요한 백서 분석, VC 투자자 정보, 락업 일정, 온체인 데이터를 한 곳에서 확인할 수 있습니다.</p>
+      <p class="inner-p" id="a1p2">저희는 복잡하고 방대한 암호화폐 정보를 누구나 쉽게 이해할 수 있도록 AI로 요약하고 시각화하여 제공합니다. 코인위키의 목표는 정보 비대칭을 해소하고 더 많은 사람들이 합리적인 투자 결정을 내릴 수 있도록 돕는 것입니다.</p>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2" id="a2t">주요 기능</h2>
+      <ul class="inner-ul" id="a2ul">
+        <li><strong>백서 자동 분석</strong> — AI가 공식 백서를 직접 찾아 팀, 토크노믹스, 리스크를 추출합니다</li>
+        <li><strong>VC & 투자자 정보</strong> — 어떤 기관이 투자했는지, 투자 규모와 라운드를 확인합니다</li>
+        <li><strong>락업 & 언락 일정</strong> — 팀·투자자 물량이 언제 풀리는지 실제 일정을 추적합니다</li>
+        <li><strong>고래 지갑 추적</strong> — 이더스캔 기반 팀 지갑 움직임과 거래소 대량 이동을 감지합니다</li>
+        <li><strong>시장 데이터</strong> — 실시간 시가총액, 유통량, 거래량, ATH 등 핵심 지표를 제공합니다</li>
+      </ul>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2" id="a3t">면책 고지</h2>
+      <p class="inner-p" id="a3p">코인위키가 제공하는 모든 정보는 참고용이며, 투자 조언이 아닙니다. 암호화폐 투자는 높은 위험을 수반하며, 모든 투자 결정은 본인의 판단과 책임 하에 이루어져야 합니다. 코인위키는 투자 손실에 대한 책임을 지지 않습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PRIVACY PAGE ===== -->
+<div class="page" id="page-privacy">
+  <div class="inner-page">
+    <p class="section-label">LEGAL</p>
+    <h1 class="inner-title">개인정보처리방침</h1>
+    <div class="inner-date">시행일: 2026년 1월 1일 · 마지막 업데이트: 2026년 1월 1일</div>
+    <div class="inner-section">
+      <h2 class="inner-h2">1. 수집하는 개인정보</h2>
+      <p class="inner-p">코인위키는 서비스 제공을 위해 다음과 같은 정보를 수집할 수 있습니다.</p>
+      <ul class="inner-ul">
+        <li>서비스 이용 기록 (검색어, 방문 페이지, 이용 시간)</li>
+        <li>기기 정보 (브라우저 종류, 운영체제, IP 주소)</li>
+        <li>문의 접수 시 이메일 주소 및 문의 내용</li>
+      </ul>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2">2. 개인정보 이용 목적</h2>
+      <ul class="inner-ul">
+        <li>서비스 제공 및 운영</li>
+        <li>서비스 개선 및 통계 분석</li>
+        <li>문의 응대 및 고객 지원</li>
+        <li>광고 서비스 제공 (Google AdSense 등 제3자 광고 네트워크)</li>
+      </ul>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2">3. 쿠키 및 광고</h2>
+      <p class="inner-p">코인위키는 서비스 개선 및 광고 제공을 위해 쿠키를 사용합니다. Google AdSense 등 제3자 광고 파트너는 쿠키를 사용하여 사용자의 관심사에 맞는 광고를 제공할 수 있습니다.</p>
+      <p class="inner-p">Google의 광고 쿠키 사용을 비활성화하려면 <a href="https://www.google.com/settings/ads" target="_blank" style="color:var(--blue)">Google 광고 설정</a>을 방문하세요.</p>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2">4. 개인정보 보관 기간</h2>
+      <p class="inner-p">수집된 개인정보는 서비스 이용 기간 동안 보관되며, 서비스 탈퇴 또는 목적 달성 후 지체 없이 파기합니다.</p>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2">5. 개인정보 보호책임자</h2>
+      <p class="inner-p">개인정보 관련 문의는 contact 페이지를 통해 접수하실 수 있습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TERMS PAGE ===== -->
+<div class="page" id="page-terms">
+  <div class="inner-page">
+    <p class="section-label">LEGAL</p>
+    <h1 class="inner-title">이용약관</h1>
+    <div class="inner-date">시행일: 2026년 1월 1일</div>
+    <div class="inner-section">
+      <h2 class="inner-h2">제1조 (목적)</h2>
+      <p class="inner-p">이 약관은 코인위키(이하 "서비스")가 제공하는 암호화폐 정보 서비스의 이용 조건 및 절차, 이용자와 서비스 간의 권리·의무 및 책임 사항을 규정함을 목적으로 합니다.</p>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2">제2조 (서비스 이용)</h2>
+      <p class="inner-p">코인위키가 제공하는 모든 정보는 참고용으로만 사용되어야 하며, 투자 조언으로 간주되어서는 안 됩니다. 이용자는 본 서비스의 정보를 활용한 투자 결정에 대한 책임을 스스로 부담합니다.</p>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2">제3조 (금지 행위)</h2>
+      <ul class="inner-ul">
+        <li>서비스의 정보를 무단으로 복제, 배포, 상업적으로 이용하는 행위</li>
+        <li>서비스의 정상적인 운영을 방해하는 행위</li>
+        <li>타인의 권리를 침해하거나 법령에 위반하는 행위</li>
+      </ul>
+    </div>
+    <div class="inner-divider"></div>
+    <div class="inner-section">
+      <h2 class="inner-h2">제4조 (면책)</h2>
+      <p class="inner-p">코인위키는 AI 기술을 활용한 자동화 분석 서비스로, 정보의 정확성을 보장하지 않습니다. 본 서비스 이용으로 발생한 투자 손실에 대해 코인위키는 책임을 지지 않습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONTACT PAGE ===== -->
+<div class="page" id="page-contact">
+  <div class="inner-page">
+    <p class="section-label">CONTACT</p>
+    <h1 class="inner-title" id="contactTitle">문의하기</h1>
+    <p class="inner-sub" id="contactSub">서비스 관련 문의, 오류 신고, 제휴 제안 등 무엇이든 보내주세요.</p>
+    <div class="ad-slot"><div class="ad-label">광고</div><div class="ad-placeholder">728×90</div></div>
+    <form class="contact-form" onsubmit="submitContact(event)">
+      <div class="form-group">
+        <label id="lblName">이름</label>
+        <input type="text" id="contactName" placeholder="홍길동" required>
+      </div>
+      <div class="form-group">
+        <label id="lblEmail">이메일</label>
+        <input type="email" id="contactEmail" placeholder="example@email.com" required>
+      </div>
+      <div class="form-group">
+        <label id="lblSubject">문의 유형</label>
+        <select id="contactSubject" style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);outline:none;width:100%">
+          <option id="opt1">서비스 문의</option>
+          <option id="opt2">오류 신고</option>
+          <option id="opt3">제휴 제안</option>
+          <option id="opt4">기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label id="lblMsg">문의 내용</label>
+        <textarea id="contactMsg" placeholder="문의 내용을 입력해주세요..." required></textarea>
+      </div>
+      <button type="submit" class="form-submit" id="submitBtn">보내기</button>
+      <div class="form-success" id="formSuccess">✓ 문의가 접수되었습니다. 빠른 시일 내에 답변드리겠습니다.</div>
+    </form>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="footer-logo">CoinWiki</div>
+      <p class="footer-tagline" id="footerTagline">AI 기반 코인 종목 심층 분석 플랫폼. 백서 분석부터 고래 추적까지.</p>
+    </div>
+    <div>
+      <div class="footer-col-title" id="fc1">서비스</div>
+      <div class="footer-links">
+        <a onclick="showPage('home')" id="fl-analyze">코인 분석</a>
+        <a onclick="showPage('guide')" id="fl-guide">코인 가이드</a>
+        <a onclick="showPage('about')" id="fl-about">소개</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title" id="fc2">고객지원</div>
+      <div class="footer-links">
+        <a onclick="showPage('contact')" id="fl-contact">문의하기</a>
+        <a onclick="showPage('privacy')" id="fl-privacy">개인정보처리방침</a>
+        <a onclick="showPage('terms')" id="fl-terms">이용약관</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title" id="fc3">면책고지</div>
+      <p class="footer-tagline" id="footerDisc">본 사이트의 정보는 투자 조언이 아닙니다. 암호화폐 투자는 원금 손실 위험이 있습니다.</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy" id="footerCopy">© 2026 CoinWiki. All rights reserved.</div>
+    <div class="footer-disclaimer" id="footerDiscBottom">본 웹사이트의 모든 정보는 참고용이며 투자 조언이 아닙니다.</div>
+  </div>
+</footer>
+
+<script>
+const T = {
+  ko:{
+    heroTag:"백서 기반 AI 코인 분석",heroT1:"코인 투자 전,",heroT2:"진짜 정보를",heroT3:"확인하세요",
+    heroSub:"백서 자동 분석 · VC 투자자 · 락업 일정 · 고래 지갑 추적",
+    heroHint:"신용카드 불필요 · 즉시 시작",
+    searchPh:"코인 이름 입력 (예: Bitcoin, Ethereum, Solana...)",
+    searchBtn:"분석 시작",analyzing:"분석 중...",
+    step1:"백서 탐색 중...",step2:"시장 데이터 수집 중...",step3:"AI 심층 분석 중...",
+    mcap:"시가총액",vol:"24h 거래량",ath:"역대 최고가",dev:"개발 활동",commits:"4주 커밋",
+    supply:"유통량 분석",circ:"유통 공급량",total:"총 발행량",max:"최대 공급량",pct:"유통률",
+    price:"가격 변동",d7:"7일",d30:"30일",low:"24h 저가",high:"24h 고가",
+    aiTitle:"AI 심층 분석",aiSub:"백서 기반 · 팀 · VC · 락업 · 리스크",
+    ad:"광고",rank:"시총 순위",change24:"24h 변동",
+    disc:"⚠ 본 분석은 참고용이며 투자 조언이 아닙니다. 투자 결정 전 반드시 공식 문서를 확인하세요.",
+    errNf:"코인을 찾을 수 없습니다. 영문 이름으로 검색해보세요.",
+    navHome:"홈",navGuide:"코인 가이드",navAbout:"소개",navContact:"문의",navCta:"분석하기",
+    featTitle:"왜 코인위키인가요?",howTitle:"이렇게 사용하세요",
+    feats:[
+      {icon:"📄",t:"백서 자동 분석",d:"AI가 공식 백서를 직접 찾아 팀·토크노믹스·리스크를 추출합니다"},
+      {icon:"🏦",t:"VC & 투자자 정보",d:"어떤 기관이 투자했는지, 투자 규모와 라운드를 확인하세요"},
+      {icon:"🔓",t:"락업 & 언락 일정",d:"팀·투자자 물량이 언제 풀리는지 실제 일정을 추적합니다"},
+      {icon:"🐋",t:"고래 지갑 추적",d:"이더스캔 기반 팀 지갑 움직임과 거래소 대량 이동을 감지합니다"},
+    ],
+    hows:[
+      {t:"코인 이름 입력",d:"분석하고 싶은 코인의 이름을 검색창에 입력하세요",n:"01"},
+      {t:"AI 자동 분석",d:"백서를 자동으로 찾아 팀, VC, 락업, 리스크를 분석합니다",n:"02"},
+      {t:"결과 확인",d:"한 페이지에서 모든 핵심 정보를 확인하세요",n:"03"},
+    ],
+    guideTitle:"코인 투자 가이드",guideSub:"코인 투자 전 반드시 알아야 할 핵심 정보들을 정리했습니다.",
+    articles:[
+      {tag:"기초",title:"토크노믹스란 무엇인가?",desc:"코인의 경제 구조인 토크노믹스를 이해하면 프로젝트의 장기 가치를 판단할 수 있습니다.",date:"2026.01.15"},
+      {tag:"투자",title:"VC 투자자가 중요한 이유",desc:"어떤 기관이 투자했는지는 프로젝트의 신뢰도와 성장 가능성을 가늠하는 중요한 지표입니다.",date:"2026.01.20"},
+      {tag:"리스크",title:"락업과 언락 일정 분석법",desc:"팀과 투자자의 물량이 언제 풀리는지 파악하면 가격 하락 리스크를 미리 예측할 수 있습니다.",date:"2026.01.25"},
+      {tag:"온체인",title:"고래 지갑 추적 방법",desc:"대형 보유자의 움직임을 추적하면 시장의 흐름을 먼저 읽을 수 있습니다.",date:"2026.02.01"},
+      {tag:"기초",title:"시가총액과 FDV의 차이",desc:"시가총액과 완전희석가치(FDV)의 차이를 이해하면 코인이 과대평가됐는지 판단할 수 있습니다.",date:"2026.02.05"},
+      {tag:"투자",title:"백서 읽는 법 완전 정리",desc:"백서에서 반드시 확인해야 할 핵심 항목들과 위험 신호를 알아봅니다.",date:"2026.02.10"},
+    ],
+    aboutTitle:"코인위키 소개",contactTitle:"문의하기",contactSub:"서비스 관련 문의, 오류 신고, 제휴 제안 등 무엇이든 보내주세요.",
+    lblName:"이름",lblEmail:"이메일",lblSubject:"문의 유형",lblMsg:"문의 내용",submitBtn:"보내기",
+    opts:["서비스 문의","오류 신고","제휴 제안","기타"],
+    formSuccess:"✓ 문의가 접수되었습니다. 빠른 시일 내에 답변드리겠습니다.",
+    footerTagline:"AI 기반 코인 종목 심층 분석 플랫폼.",
+    fc1:"서비스",fc2:"고객지원",fc3:"면책고지",
+    flAnalyze:"코인 분석",flGuide:"코인 가이드",flAbout:"소개",flContact:"문의하기",flPrivacy:"개인정보처리방침",flTerms:"이용약관",
+    footerCopy:"© 2026 CoinWiki. All rights reserved.",
+    footerDisc:"본 웹사이트의 모든 정보는 참고용이며 투자 조언이 아닙니다.",
+    footerDiscSection:"본 사이트의 정보는 투자 조언이 아닙니다. 암호화폐 투자는 원금 손실 위험이 있습니다.",
+    sys:`당신은 암호화폐 분석 전문가입니다. 웹 검색으로 아래 형식에 맞게 한국어 텍스트만 출력하세요. 마크다운 없이:
+[개발팀] 핵심 창업자/개발자와 배경
+[투자자 & 백커] 주요 VC 및 투자사 목록
+[토크노믹스] 배분 구조 및 요약
+[락업 일정] 주요 언락 일정
+[리스크 포인트] 핵심 리스크 2-3가지
+[한줄 요약] 한 문장 요약`,
+    userMsg:(n,s)=>`${n} (${s}) 코인의 팀, VC, 토크노믹스, 락업 일정을 조사해줘.`,
+  },
+  en:{
+    heroTag:"Whitepaper-based AI Coin Analysis",heroT1:"Before You Invest,",heroT2:"Get the Real",heroT3:"Information",
+    heroSub:"Auto Whitepaper Analysis · VC Investors · Lockup Schedule · Whale Wallet Tracking",
+    heroHint:"No credit card · Start instantly",
+    searchPh:"Enter coin name (e.g. Bitcoin, Ethereum, Solana...)",
+    searchBtn:"Analyze",analyzing:"Analyzing...",
+    step1:"Searching whitepaper...",step2:"Fetching market data...",step3:"Running AI analysis...",
+    mcap:"Market Cap",vol:"24h Volume",ath:"All-Time High",dev:"Dev Activity",commits:"4-Week Commits",
+    supply:"Supply Analysis",circ:"Circulating Supply",total:"Total Supply",max:"Max Supply",pct:"Circulating %",
+    price:"Price Change",d7:"7 Days",d30:"30 Days",low:"24h Low",high:"24h High",
+    aiTitle:"AI Deep Analysis",aiSub:"Whitepaper · Team · VC · Lockup · Risks",
+    ad:"Advertisement",rank:"CMC Rank",change24:"24h Change",
+    disc:"⚠ This analysis is for informational purposes only and is not investment advice.",
+    errNf:"Coin not found. Try searching in English.",
+    navHome:"Home",navGuide:"Coin Guide",navAbout:"About",navContact:"Contact",navCta:"Analyze",
+    featTitle:"Why CoinWiki?",howTitle:"How It Works",
+    feats:[
+      {icon:"📄",t:"Auto Whitepaper Analysis",d:"AI finds the official whitepaper and extracts team, tokenomics & risks"},
+      {icon:"🏦",t:"VC & Investor Data",d:"See which institutions invested, funding rounds and amounts"},
+      {icon:"🔓",t:"Lockup & Unlock Schedule",d:"Track when team and investor tokens will be released"},
+      {icon:"🐋",t:"Whale Wallet Tracking",d:"Detect team wallet movements and large exchange transfers via Etherscan"},
+    ],
+    hows:[
+      {t:"Enter Coin Name",d:"Type the name of any coin you want to analyze",n:"01"},
+      {t:"AI Auto Analysis",d:"AI finds the whitepaper and analyzes team, VC, lockup and risks",n:"02"},
+      {t:"Review Results",d:"Get all key information on one page to make informed decisions",n:"03"},
+    ],
+    guideTitle:"Crypto Investment Guide",guideSub:"Essential information you need to know before investing in crypto.",
+    articles:[
+      {tag:"Basics",title:"What is Tokenomics?",desc:"Understanding a coin's economic structure helps you assess the long-term value of a project.",date:"2026.01.15"},
+      {tag:"Investing",title:"Why VC Investors Matter",desc:"Which institutions have invested is a key indicator of a project's credibility and growth potential.",date:"2026.01.20"},
+      {tag:"Risk",title:"How to Analyze Lockup Schedules",desc:"Knowing when team and investor tokens unlock lets you anticipate potential price drops.",date:"2026.01.25"},
+      {tag:"On-chain",title:"How to Track Whale Wallets",desc:"Tracking large holders' movements lets you read market trends before they happen.",date:"2026.02.01"},
+      {tag:"Basics",title:"Market Cap vs FDV Explained",desc:"Understanding the difference between market cap and fully diluted valuation helps you spot overvalued coins.",date:"2026.02.05"},
+      {tag:"Investing",title:"How to Read a Whitepaper",desc:"Key sections to check in any whitepaper and red flags to watch out for.",date:"2026.02.10"},
+    ],
+    aboutTitle:"About CoinWiki",contactTitle:"Contact Us",contactSub:"Send us your questions, bug reports, or partnership proposals.",
+    lblName:"Name",lblEmail:"Email",lblSubject:"Subject",lblMsg:"Message",submitBtn:"Send",
+    opts:["General Inquiry","Bug Report","Partnership","Other"],
+    formSuccess:"✓ Your message has been received. We'll get back to you soon.",
+    footerTagline:"AI-powered crypto analysis platform.",
+    fc1:"Services",fc2:"Support",fc3:"Disclaimer",
+    flAnalyze:"Coin Analysis",flGuide:"Coin Guide",flAbout:"About",flContact:"Contact",flPrivacy:"Privacy Policy",flTerms:"Terms of Use",
+    footerCopy:"© 2026 CoinWiki. All rights reserved.",
+    footerDisc:"All information on this site is for informational purposes only and is not investment advice.",
+    footerDiscSection:"Content is not investment advice. Crypto investments carry risk of loss.",
+    sys:`You are a crypto analyst. Search the web and respond ONLY in plain English text (no markdown):
+[Team] Key founders/developers and background
+[Investors & Backers] Main VCs and investment firms
+[Tokenomics] Distribution structure summary
+[Lockup Schedule] Key unlock dates and amounts
+[Risk Points] 2-3 key risks to watch
+[Summary] One sentence summary`,
+    userMsg:(n,s)=>`Research ${n} (${s}) team, VCs, tokenomics, and lockup schedule.`,
+  }
+};
+
+let lang="ko";
+
+function fmt(n){
+  if(!n&&n!==0)return"—";
+  if(n>=1e12)return"$"+(n/1e12).toFixed(2)+"T";
+  if(n>=1e9)return"$"+(n/1e9).toFixed(2)+"B";
+  if(n>=1e6)return"$"+(n/1e6).toFixed(2)+"M";
+  if(n>=1e3)return"$"+n.toLocaleString();
+  return"$"+n.toFixed(4);
+}
+function fmtS(n){
+  if(!n)return"—";
+  if(n>=1e9)return(n/1e9).toFixed(2)+"B";
+  if(n>=1e6)return(n/1e6).toFixed(2)+"M";
+  if(n>=1e3)return(n/1e3).toFixed(2)+"K";
+  return n.toLocaleString();
+}
+function $(id){return document.getElementById(id)}
+function _set(id,val){const e=document.getElementById(id);if(e)e.textContent=val;}
+
+function showPage(p){
+  document.querySelectorAll(".page").forEach(el=>el.classList.remove("active"));
+  $("page-"+p).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(p==="guide")buildArticles();
+  if(p==="whale"&&!window._whInited){window._whInited=true;setTimeout(whInit,200);}
+  initReveal();
+}
+
+function setLang(l){
+  lang=l;
+  $("btnKo").className="lang-btn"+(l==="ko"?" active":"");
+  $("btnEn").className="lang-btn"+(l==="en"?" active":"");
+  const t=T[l];
+  $("heroTag").textContent=t.heroTag;
+  $("heroT1").textContent=t.heroT1;
+  $("heroT2").textContent=t.heroT2;
+  $("heroT3").textContent=t.heroT3;
+  $("heroSub").textContent=t.heroSub;
+  $("heroHint").textContent=t.heroHint;
+  $("searchInput").placeholder=t.searchPh;
+  $("searchBtn").textContent=t.searchBtn;
+  $("navCta").textContent=t.navCta;
+  $("nav-home").textContent=t.navHome;
+  $("nav-guide").textContent=t.navGuide;
+  $("nav-about").textContent=t.navAbout;
+  $("nav-contact").textContent=t.navContact;
+  $("featTitle").textContent=t.featTitle;
+  $("howTitle").textContent=t.howTitle;
+  $("aiTitle").textContent=t.aiTitle;
+  $("aiSubTxt").textContent=t.aiSub;
+  $("discText").textContent=t.disc;
+  $("adLbl1").textContent=t.ad;
+  $("adLbl2").textContent=t.ad;
+  // chart tabs
+  const tabs=document.querySelectorAll(".chart-tab");
+  const tabLabels=l==="ko"?["7일","30일","90일","1년"]:["7 Days","30 Days","90 Days","1 Year"];
+  tabs.forEach((tab,i)=>{if(tabLabels[i])tab.textContent=tabLabels[i]});
+  const days=["7","30","90","365"];
+  tabs.forEach((tab,i)=>{tab.onclick=()=>loadChart(days[i])});
+  if($("chartTitle"))$("chartTitle").textContent=l==="ko"?"가격 차트":"Price Chart";
+  if($("aiChartTitle"))$("aiChartTitle").textContent=l==="ko"?"AI 차트 패턴 분석":"AI Chart Pattern Analysis";
+  if($("csl1"))$("csl1").textContent=l==="ko"?"기간 최고":"Period High";
+  if($("csl2"))$("csl2").textContent=l==="ko"?"기간 최저":"Period Low";
+  if($("csl3"))$("csl3").textContent=l==="ko"?"기간 변동":"Period Change";
+  if($("csl4"))$("csl4").textContent=l==="ko"?"평균 거래량":"Avg Volume";
+  $("rankLbl").textContent=t.rank;
+  $("lMcap").textContent=t.mcap;
+  $("lVol").textContent=t.vol;
+  $("lAth").textContent=t.ath;
+  $("lDev").textContent=t.dev;
+  $("lSupply").textContent=t.supply;
+  $("lCirc").textContent=t.circ;
+  $("lTotal").textContent=t.total;
+  $("lMax").textContent=t.max;
+  $("lPct").textContent=t.pct;
+  $("lPrice").textContent=t.price;
+  $("l7d").textContent=t.d7;$("l30d").textContent=t.d30;
+  $("lLow").textContent=t.low;$("lHigh").textContent=t.high;
+  $("lProgL").textContent=t.circ;
+  $("guideTitle").textContent=t.guideTitle;
+  $("guideSub").textContent=t.guideSub;
+  $("aboutTitle").textContent=t.aboutTitle;
+  $("contactTitle").textContent=t.contactTitle;
+  $("contactSub").textContent=t.contactSub;
+  $("lblName").textContent=t.lblName;
+  _set("lblEmail",t.lblEmail);
+  _set("lblSubject",t.lblSubject);
+  _set("lblMsg",t.lblMsg);
+  _set("submitBtn",t.submitBtn);
+  _set("opt1",t.opts[0]);_set("opt2",t.opts[1]);
+  _set("opt3",t.opts[2]);_set("opt4",t.opts[3]);
+  _set("footerTagline",t.footerTagline);
+  _set("footerDiscSection",t.footerDiscSection);
+  _set("fc1",t.fc1);_set("fc2",t.fc2);_set("fc3",t.fc3);
+  _set("fl-analyze",t.flAnalyze);_set("fl-guide",t.flGuide);
+  _set("fl-about",t.flAbout);_set("fl-contact",t.flContact);
+  _set("fl-privacy",t.flPrivacy);_set("fl-terms",t.flTerms);
+  _set("footerCopy",t.footerCopy);
+  _set("footerDiscBottom",t.footerDisc);
+  buildFeatures();buildHow();buildArticles();
+  document.documentElement.lang=l==="ko"?"ko":"en";
+}
+
+function buildFeatures(){
+  const t=T[lang];
+  $("featGrid").innerHTML=t.feats.map((f,i)=>`
+    <div class="feat-card reveal d${i+1}">
+      <div class="feat-icon">${f.icon}</div>
+      <div class="feat-title">${f.t}</div>
+      <div class="feat-desc">${f.d}</div>
+    </div>`).join("");
+  initReveal();
+}
+function buildHow(){
+  const t=T[lang];
+  $("howGrid").innerHTML=t.hows.map((h,i)=>`
+    <div class="how-card reveal d${i+1}">
+      <div class="how-num">${h.n}</div>
+      <div class="how-title">${h.t}</div>
+      <div class="how-desc">${h.d}</div>
+    </div>`).join("");
+  initReveal();
+}
+function buildArticles(){
+  const t=T[lang];
+  $("articlesGrid").innerHTML=t.articles.map(a=>`
+    <div class="article-card" onclick="showPage('home')">
+      <div class="article-tag">${a.tag}</div>
+      <div class="article-title">${a.title}</div>
+      <div class="article-desc">${a.desc}</div>
+      <div class="article-meta">${a.date}</div>
+    </div>`).join("");
+}
+
+function initReveal(){
+  const obs=new IntersectionObserver(e=>{
+    e.forEach(el=>{if(el.isIntersecting)el.target.classList.add("vis")});
+  },{threshold:0.08});
+  document.querySelectorAll(".reveal:not(.vis)").forEach(el=>obs.observe(el));
+}
+
+function submitContact(e){
+  e.preventDefault();
+  $("submitBtn").textContent="...";
+  setTimeout(()=>{
+    $("formSuccess").style.display="block";
+    $("submitBtn").textContent=T[lang].submitBtn;
+    e.target.reset();
+  },800);
+}
+
+async function analyze(){
+  const q=$("searchInput").value.trim();
+  if(!q)return;
+  const t=T[lang];
+  $("searchBtn").disabled=true;
+  $("searchBtn").textContent=t.analyzing;
+  $("result").classList.remove("show");
+  $("errorBox").classList.remove("show");
+  $("loading").classList.add("show");
+  $("aiContent").textContent="";
+  const setStep=s=>$("loadStep").textContent=s;
+
+  try{
+    setStep(t.step1);
+    const sr=await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(q)}`);
+    const sj=await sr.json();
+    const id=sj?.coins?.[0]?.id;
+    if(!id)throw new Error(t.errNf);
+
+    setStep(t.step2);
+    const dr=await fetch(`https://api.coingecko.com/api/v3/coins/${id}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=true`);
+    const d=await dr.json();
+    const md=d.market_data;
+
+    if(d.image?.large){$("coinImg").src=d.image.large;$("coinImg").style.display="block";$("coinImgPh").style.display="none";}
+    else{$("coinImg").style.display="none";$("coinImgPh").style.display="flex";}
+    currentCoinId = id;
+    $("coinName").textContent=d.name;
+    $("coinSym").textContent=(d.symbol||"").toUpperCase();
+    $("coinPrice").textContent=fmt(md?.current_price?.usd);
+    const ch24=md?.price_change_percentage_24h||0;
+    const chEl=$("coinChange");
+    chEl.className="coin-change "+(ch24>=0?"pos":"neg");
+    chEl.innerHTML=`${ch24>=0?"▲":"▼"} ${Math.abs(ch24).toFixed(2)}% <span style="font-size:11px;color:var(--muted);margin-left:4px">${t.change24}</span>`;
+    if(md?.market_cap_rank){$("coinRank").textContent=`#${md.market_cap_rank}`;$("coinRankBox").style.display="flex";}
+    const mcap=md?.market_cap?.usd,vol=md?.total_volume?.usd;
+    $("vMcap").textContent=fmt(mcap);
+    $("vFdv").textContent="FDV: "+fmt(md?.fully_diluted_valuation?.usd);
+    $("vVol").textContent=fmt(vol);
+    $("vVolR").textContent=(vol&&mcap)?"Vol/MCap: "+(vol/mcap*100).toFixed(1)+"%":"";
+    $("vAth").textContent=fmt(md?.ath?.usd);
+    const athCh=md?.ath_change_percentage?.usd;
+    $("vAthC").textContent=athCh?athCh.toFixed(1)+"%":"";
+    $("vStars").textContent=d.developer_data?.stars?.toLocaleString()||"—";
+    $("vCommits").textContent=`${t.commits}: ${d.developer_data?.commit_count_4_weeks??"—"}`;
+    const cs=md?.circulating_supply,ts=md?.total_supply,ms=md?.max_supply;
+    const pct=ts?(cs/ts*100):null;
+    $("vCirc").textContent=fmtS(cs);$("vTotal").textContent=fmtS(ts);
+    $("vMax").textContent=ms?fmtS(ms):"∞";$("vPct").textContent=pct?pct.toFixed(1)+"%":"—";
+    if(pct){$("progWrap").style.display="block";$("vProgPct").textContent=pct.toFixed(1)+"%";$("progFill").style.width=pct+"%";}
+    const c7=md?.price_change_percentage_7d||0,c30=md?.price_change_percentage_30d||0;
+    const v7=$("v7d");v7.className="sv "+(c7>=0?"pos":"neg");v7.textContent=(c7>=0?"+":"")+c7.toFixed(2)+"%";
+    const v30=$("v30d");v30.className="sv "+(c30>=0?"pos":"neg");v30.textContent=(c30>=0?"+":"")+c30.toFixed(2)+"%";
+    $("vLow").textContent=fmt(md?.low_24h?.usd);$("vHigh").textContent=fmt(md?.high_24h?.usd);
+
+    $("loading").classList.remove("show");
+    $("result").classList.add("show");
+    $("result").scrollIntoView({behavior:"smooth"});
+    initReveal();
+    loadChart("7");
+
+    setStep(t.step3);
+    $("aiContent").textContent=t.step3;
+    $("loading").classList.add("show");
+    const ar=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",max_tokens:1000,
+        tools:[{type:"web_search_20250305",name:"web_search"}],
+        system:t.sys,
+        messages:[{role:"user",content:t.userMsg(d.name,(d.symbol||"").toUpperCase())}]
+      })
+    });
+    const aj=await ar.json();
+    const txt=(aj.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+    $("aiContent").textContent=txt||"분석 결과를 가져오지 못했습니다.";
+    $("loading").classList.remove("show");
+  }catch(e){
+    $("loading").classList.remove("show");
+    $("errorBox").textContent="⚠ "+(e.message||"오류");
+    $("errorBox").classList.add("show");
+  }finally{
+    $("searchBtn").disabled=false;
+    $("searchBtn").textContent=T[lang].searchBtn;
+  }
+}
+
+// ===== CHART =====
+let priceChartInstance = null;
+let currentCoinId = "";
+let currentDays = "7";
+
+async function loadChart(days) {
+  currentDays = days;
+  document.querySelectorAll(".chart-tab").forEach(t => {
+    t.classList.toggle("active", t.textContent === (days==="7"?"7일":days==="30"?"30일":days==="90"?"90일":"1년") ||
+      t.textContent === (days==="7"?"7 Days":days==="30"?"30 Days":days==="90"?"90 Days":"1 Year"));
+  });
+  if (!currentCoinId) return;
+  try {
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/${currentCoinId}/market_chart?vs_currency=usd&days=${days}`);
+    const data = await res.json();
+    const prices = data.prices || [];
+    const volumes = data.total_volumes || [];
+    if (!prices.length) return;
+
+    const labels = prices.map(p => {
+      const d = new Date(p[0]);
+      return days === "1" ? d.toLocaleTimeString("ko",{hour:"2-digit",minute:"2-digit"}) :
+             d.toLocaleDateString("ko",{month:"short",day:"numeric"});
+    });
+    const vals = prices.map(p => p[1]);
+    const vols = volumes.map(v => v[1]);
+    const hi = Math.max(...vals), lo = Math.min(...vals);
+    const chg = ((vals[vals.length-1] - vals[0]) / vals[0] * 100).toFixed(2);
+    const avgVol = vols.reduce((a,b)=>a+b,0)/vols.length;
+
+    $("csHigh").textContent = fmt(hi);
+    $("csLow").textContent = fmt(lo);
+    $("csChange").textContent = (chg>=0?"+":"")+chg+"%";
+    $("csChange").style.color = chg>=0?"var(--green)":"var(--red)";
+    $("csVol").textContent = fmt(avgVol);
+
+    const isUp = vals[vals.length-1] >= vals[0];
+    const color = isUp ? "rgba(0,229,160,1)" : "rgba(255,77,109,1)";
+    const fillColor = isUp ? "rgba(0,229,160,0.08)" : "rgba(255,77,109,0.08)";
+
+    if (priceChartInstance) priceChartInstance.destroy();
+    const ctx = document.getElementById("priceChart").getContext("2d");
+    priceChartInstance = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          data: vals,
+          borderColor: color,
+          backgroundColor: fillColor,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          fill: true,
+          tension: 0.3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: "index" },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(19,23,32,0.95)",
+            borderColor: "rgba(255,255,255,0.08)",
+            borderWidth: 1,
+            titleColor: "rgba(240,242,248,0.6)",
+            bodyColor: "#F0F2F8",
+            callbacks: { label: ctx => " $" + ctx.parsed.y.toLocaleString(undefined,{maximumFractionDigits:4}) }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(255,255,255,0.04)" },
+            ticks: { color: "rgba(240,242,248,0.35)", maxTicksLimit: 6, font: { size: 10, family: "'Plus Jakarta Sans'" } },
+            border: { display: false }
+          },
+          y: {
+            position: "right",
+            grid: { color: "rgba(255,255,255,0.04)" },
+            ticks: { color: "rgba(240,242,248,0.35)", maxTicksLimit: 5, font: { size: 10, family: "'Plus Jakarta Sans'" },
+              callback: v => "$"+v.toLocaleString(undefined,{maximumFractionDigits:2}) },
+            border: { display: false }
+          }
+        }
+      }
+    });
+
+    // AI chart analysis
+    runChartAI(vals, hi, lo, chg, days);
+  } catch(e) {
+    console.error("Chart error:", e);
+  }
+}
+
+async function runChartAI(vals, hi, lo, chg, days) {
+  $("aiChartContent").textContent = lang==="ko" ? "차트 패턴 분석 중..." : "Analyzing chart patterns...";
+  const first = vals[0], last = vals[vals.length-1];
+  const mid = vals[Math.floor(vals.length/2)];
+  const isKo = lang === "ko";
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 600,
+        messages: [{
+          role: "user",
+          content: isKo
+            ? `코인 가격 데이터 분석 (${days}일):
+- 시작가: $${first.toFixed(4)}
+- 중간가: $${mid.toFixed(4)}
+- 현재가: $${last.toFixed(4)}
+- 기간 최고: $${hi.toFixed(4)}
+- 기간 최저: $${lo.toFixed(4)}
+- 기간 변동: ${chg}%
+- 데이터 포인트 수: ${vals.length}
+
+위 데이터를 바탕으로 다음을 한국어로 분석해줘 (마크다운 없이 일반 텍스트로):
+[추세 분석] 상승/하락/횡보 여부와 패턴
+[지지/저항] 주요 가격대
+[변동성] 기간 내 변동성 평가
+[주의사항] 투자 시 참고할 점`
+            : `Coin price data analysis (${days} days):
+- Start: $${first.toFixed(4)}
+- Mid: $${mid.toFixed(4)}
+- Current: $${last.toFixed(4)}
+- Period High: $${hi.toFixed(4)}
+- Period Low: $${lo.toFixed(4)}
+- Change: ${chg}%
+
+Analyze in plain English (no markdown):
+[Trend] Uptrend/downtrend/sideways and pattern
+[Support/Resistance] Key price levels
+[Volatility] Assessment of price volatility
+[Note] Points to consider for investors`
+        }]
+      })
+    });
+    const data = await res.json();
+    const txt = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+    $("aiChartContent").textContent = txt || "분석 결과를 가져오지 못했습니다.";
+  } catch(e) {
+    $("aiChartContent").textContent = isKo ? "차트 분석을 불러오지 못했습니다." : "Could not load chart analysis.";
+  }
+}
+
+// AUTO LANG
+(function(){
+  const bl=(navigator.language||"en").toLowerCase();
+  setLang(bl.startsWith("ko")?"ko":"en");
+})();
+initReveal();
+</script>
+
+<script>
+// ═══════════════════════════════════
+// 🐋 WHALE RADAR
+// ═══════════════════════════════════
+var _whCfg={bot:'',free:'',paid:''};
+var _whFeed=[], _whStats={total:0,found:0,sell:0,buy:0,sleep:0,newW:0};
+var _whEgg=[], _whSeen=new Set(), _whAcc={}, _whDQ=[], _whBusy=false;
+var _whChain='all', _whSig='all';
+var _WH_EGG='0x65ccd72c0813ce6f2703593b633202a0f3ca6a0c';
+var _WH_P={eth:3200,btc:87000,sol:150,egg:0.0025};
+var _WH_W={
+  '0x28c6c06298d514db089934071355e5743bf21d60':{name:'Binance Hot 1',type:'exchange',chain:'eth'},
+  '0xd551234ae421e3bcba99a0da6d736074f22192ff':{name:'Binance Hot 2',type:'exchange',chain:'eth'},
+  '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be':{name:'Binance 1',type:'exchange',chain:'eth'},
+  '0xf977814e90da44bfa03b6295a0616a897441acec':{name:'Binance Hot 20',type:'exchange',chain:'eth'},
+  '0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43':{name:'Coinbase',type:'exchange',chain:'eth'},
+  '0x2910543af39aba0cd09dbb2d50200b3e800a63d2':{name:'Kraken 1',type:'exchange',chain:'eth'},
+  '0x0a869d79a7052c7f1b55a8ebabbea3420f0d1e13':{name:'Kraken 2',type:'exchange',chain:'eth'},
+  '0x6cc5f688a315f3dc28a7781717a9a798a59fda7b':{name:'OKX',type:'exchange',chain:'eth'},
+  '0xf89d7b9c864f589bbf53a82105107622b35eaa40':{name:'Bybit',type:'exchange',chain:'eth'},
+  '0x742d35cc6634c0532925a3b844bc454e4438f44e':{name:'Bitfinex',type:'exchange',chain:'eth'},
+  '0xdc76cd25977e0a5ae17155770273ad58648900d3':{name:'HTX',type:'exchange',chain:'eth'},
+  '0x0d0707963952f2fba59dd06f2b425ace40b492fe':{name:'Gate.io',type:'exchange',chain:'eth'},
+  '0x17e5545b11b468072283cee1f066a059fb0dbf24':{name:'Bithumb 🇰🇷',type:'korean',chain:'eth'},
+  '0x390de26d772d2e2005c6d1d24afc902bae37a4bb':{name:'Upbit 1 🇰🇷',type:'korean',chain:'eth'},
+  '0xba826fec90cefdf6706858e5fbafcb27a290fbe0':{name:'Upbit 2 🇰🇷',type:'korean',chain:'eth'},
+  '0x5e032243d507c743b061ef021e2ec7fcc6d3ab89':{name:'Upbit 3 🇰🇷',type:'korean',chain:'eth'},
+  '0xd8da6bf26964af9d7eed9e03e53415d37aa96045':{name:'Vitalik',type:'smart',chain:'eth'},
+  '0x4f3aff3a747fcabe17159aa959a0ae9e4100b29f':{name:'Wintermute',type:'smart',chain:'eth'},
+  '0xa046a8660e66d178ee07ec97c585eeb6aa18c26c':{name:'Paradigm',type:'smart',chain:'eth'},
+  '0xf584f8728b874a6a5c7a8d4d387c9aae9172d621':{name:'Jump Trading',type:'smart',chain:'eth'},
+};
+var _SOL_W=[
+  {addr:'9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM',name:'Binance SOL',type:'exchange'},
+  {addr:'5tzFkiKscXHK5ZXCGbCAbZ5dkiEuuGevuM3h7pB5MHU5',name:'OKX SOL',type:'exchange'},
+  {addr:'AC5RDfQFmDS1deWZos921JfqscXdByf8BrmHx3cs1ZMP',name:'Coinbase SOL',type:'exchange'},
+  {addr:'GThUX1Atko4tqhN2NaiTazWSeFWMoAGgLFkqnn9tN5z3',name:'Bybit SOL',type:'exchange'},
+  {addr:'DYgLjazTY6kMqagbTMZEMSqL7G7rHY5GtwbxbHJH7kya',name:'Upbit SOL 🇰🇷',type:'korean'},
+  {addr:'7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2',name:'SOL 재단',type:'foundation'},
+];
+var _BTC_W=[
+  {addr:'34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo',name:'Binance Cold',type:'exchange'},
+  {addr:'1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s',name:'Binance 2',type:'exchange'},
+  {addr:'3Cbq7aT1tY8kMxWLbitaG7yT6bPbKChq64',name:'Huobi BTC',type:'exchange'},
+  {addr:'3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r',name:'Bitfinex Cold',type:'exchange'},
+  {addr:'1AnwDVbwsLBVwRfqN2x9Eo4YEJSPXo2cwG',name:'Kraken BTC',type:'exchange'},
+];
+
+function whInit(){
+  const s=localStorage.getItem('_wh_cfg');
+  if(s)_whCfg={..._whCfg,...JSON.parse(s)};
+  Object.keys(_WH_W).forEach(a=>_whSeen.add(a));
+  whRenderW();
+  whLoadEgg();
+  whSetDot('spin','스캔중...');
+  setTimeout(()=>{whScan();setInterval(whScan,90000);setInterval(whDQ,60000);},500);
+}
+
+async function whLoadEgg(){
+  try{
+    const r=await fetch('https://api.ethplorer.io/getTopTokenHolders/'+_WH_EGG+'?apiKey=freekey&limit=12');
+    const d=await r.json();
+    if(!d.holders)return;
+    _whEgg=d.holders.map((h,i)=>{
+      const a=h.address.toLowerCase();
+      return{addr:a,label:_WH_W[a]?.name||(i<2?'EGG 재단 추정 #'+(i+1):'EGG 고래 #'+(i+1)),type:_WH_W[a]?.type||(i<2?'foundation':'whale'),pct:((h.balance/2994901340)*100).toFixed(2)};
+    });
+    whRenderW();
+  }catch(e){}
+}
+
+function whRenderW(){
+  const el=document.getElementById('wh-wlist');
+  if(!el)return;
+  const all=[...Object.entries(_WH_W).slice(0,14).map(([a,v])=>({...v,addr:a})),..._whEgg.slice(0,6)];
+  document.getElementById('wh-wcount').textContent=all.length;
+  el.innerHTML=all.map(w=>`<div class="wh-wi"><div class="wh-wn"><span>${w.name||w.label}</span><span class="wh-cd ${w.chain||'egg'}"></span></div><div class="wh-wa">${(w.addr||'').slice(0,10)}...${(w.addr||'').slice(-4)}</div><div class="wh-wt"><span class="wh-tg ${w.type}">${w.type}</span><span class="wh-tg" style="background:rgba(255,255,255,.05);color:var(--muted)">${(w.chain||'egg').toUpperCase()}</span></div></div>`).join('');
+}
+
+async function whScan(){
+  if(_whBusy)return;
+  _whBusy=true;
+  whSetDot('spin','스캔중...');
+  const bar=document.getElementById('wh-pbar');
+  const wl=Object.entries(_WH_W);
+  for(let i=0;i<wl.length;i++){
+    if(bar)bar.style.width=((i+1)/wl.length*50)+'%';
+    await whCheckETH(...wl[i]);
+    await whSleep(160);
+  }
+  for(let i=0;i<_whEgg.length;i++){
+    if(bar)bar.style.width=(50+(i+1)/_whEgg.length*20)+'%';
+    await whCheckEgg(_whEgg[i]);
+    await whSleep(180);
+  }
+  if(bar)bar.style.width='75%';
+  await whCheckBTC();
+  if(bar){bar.style.width='100%';setTimeout(()=>bar.style.width='0%',400);}
+  whSetDot('on','추적중 — '+new Date().toLocaleTimeString('ko-KR'));
+  _whBusy=false;
+}
+
+async function whCheckETH(addr,info){
+  try{
+    const r=await fetch('/api/eth?module=account&action=txlist&address='+addr+'&page=1&offset=5&sort=desc&_='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!Array.isArray(d.result)||!d.result.length)return;
+    const tx=d.result[0];
+    const eth=Number(tx.value)/1e18;
+    const from=(tx.from||'').toLowerCase(),to=(tx.to||'').toLowerCase(),isSend=from===addr;
+    const toI=_WH_W[to],frI=_WH_W[from];
+    let type,icon;
+    if(info.type==='foundation'&&isSend){type='foundation';icon='⚠️';}
+    else if(toI||frI){type=isSend?'sell':'buy';icon=isSend?'🔴':'🟢';}
+    else if(!isSend&&whIsNew(from,eth*_WH_P.eth)){type='newwhale';icon='🆕';}
+    else{type=isSend?'flow':'buy';icon=isSend?'🔄':'🟢';}
+    if(!isSend&&['buy','newwhale'].includes(type)&&whAcc(addr,eth)){type='acc';icon='🟠';}
+    const amt=eth>0?eth.toFixed(4)+'ETH':'활동감지';
+    whAdd({id:tx.hash,chain:'eth',type,icon,label:info.name,wtype:info.type,amt,unit:'',usd:Math.round(eth*_WH_P.eth),from:tx.from||'',to:tx.to||'',frL:frI?.name,toL:toI?.name,isSend,hash:tx.hash,url:'https://etherscan.io/tx/'+tx.hash});
+  }catch(e){}
+}
+
+async function whCheckEgg(w){
+  try{
+    const r=await fetch('/api/eth?module=account&action=tokentx&contractaddress='+_WH_EGG+'&address='+w.addr+'&page=1&offset=5&sort=desc&_='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!Array.isArray(d.result)||!d.result.length)return;
+    const txs=d.result;
+    const show=txs.slice(0,1);
+    for(const tx of show){
+      const amt=parseFloat(tx.value)/1e18;
+      if(amt<100000)continue;
+      const from=tx.from.toLowerCase(),to=tx.to.toLowerCase(),isSend=from===w.addr;
+      const toE=_WH_W[to],frE=_WH_W[from];
+      let type,icon;
+      if(w.type==='foundation'&&isSend){type='foundation';icon='⚠️';}
+      else if(toE){type='sell';icon='🔴';}
+      else if(frE){type='buy';icon='🟢';}
+      else if(!isSend&&whIsNew(from,amt*_WH_P.egg)){type='newwhale';icon='🆕';}
+      else{type=isSend?'flow':'buy';icon=isSend?'🔄':'🟢';}
+      if(!isSend&&type==='buy'&&whAcc(w.addr,amt)){type='acc';icon='🟠';}
+      whAdd({id:tx.hash,chain:'egg',type,icon,label:w.label,wtype:w.type,amt:whFmt(amt),unit:'EGG',usd:Math.round(amt*_WH_P.egg),from:tx.from,to:tx.to,frL:frE?.name,toL:toE?.name,isSend,hash:tx.hash,url:'https://etherscan.io/tx/'+tx.hash});
+    }
+  }catch(e){}
+}
+
+async function whCheckBTC(){
+  for(const w of _BTC_W){
+    try{
+      const r=await fetch('/api/btc?address='+w.addr+'&_='+Date.now(),{cache:'no-store'});
+      if(!r.ok)continue;
+      const d=await r.json();
+      if(!d.txs?.length)continue;
+      const key='_whb_'+w.addr;
+      localStorage.setItem(key,d.txs[0].hash);
+      const show=d.txs.slice(0,1);
+      for(const tx of show){
+        const tot=(tx.out||[]).reduce((s,o)=>s+(o.value||0),0)/1e8;
+        if(tot<5)continue; // 5 BTC 이상
+        const isSend=(tx.inputs||[]).some(i=>i.prev_out?.addr===w.addr);
+        whAdd({id:tx.hash,chain:'btc',type:isSend?'sell':'buy',icon:isSend?'🔴':'🟢',label:w.name,wtype:w.type,amt:tot.toFixed(2),unit:'BTC',usd:Math.round(tot*_WH_P.btc),from:isSend?w.addr:'unknown',to:isSend?'unknown':w.addr,frL:isSend?w.name:null,toL:isSend?null:w.name,isSend,hash:tx.hash,url:'https://www.blockchain.com/btc/tx/'+tx.hash});
+      }
+      await whSleep(400);
+    }catch(e){await whSleep(200);}
+  }
+}
+
+async function whCheckSOL(){
+  for(const w of _SOL_W){
+    try{
+      const r=await fetch('/api/sol?address='+w.addr);
+      if(!r.ok)continue;
+      const res=await r.json();
+      const txs=res.data;
+      if(!Array.isArray(txs)||!txs.length)continue;
+      const key='_whs_'+w.addr;
+      const firstSig=res.source==='helius'?txs[0].signature:txs[0].txHash;
+      const last=localStorage.getItem(key);
+      localStorage.setItem(key,firstSig);
+      const show=last?txs.filter(t=>(t.signature||t.txHash)!==last):txs.slice(0,1);
+      for(const tx of show){
+        let sol=0,isSend=false;
+        if(res.source==='helius'){
+          for(const t of tx.nativeTransfers||[]){if(t.fromUserAccount===w.addr){sol=t.amount/1e9;isSend=true;break;}if(t.toUserAccount===w.addr){sol=t.amount/1e9;isSend=false;break;}}
+        }else{sol=Math.abs((tx.lamport||0)/1e9);isSend=(tx.src===w.addr);}
+        if(sol<500)continue;
+        const usd=Math.round(sol*_WH_P.sol);
+        let type,icon;
+        if(w.type==='foundation'&&isSend){type='foundation';icon='⚠️';}
+        else if(w.type==='korean'||w.type==='exchange'){type=isSend?'sell':'buy';icon=isSend?'🔴':'🟢';}
+        else if(!isSend&&whIsNew(w.addr,usd)){type='newwhale';icon='🆕';}
+        else{type=isSend?'flow':'buy';icon=isSend?'🔄':'🟢';}
+        if(!isSend&&type==='buy'&&whAcc(w.addr,sol)){type='acc';icon='🟠';}
+        const sig=tx.signature||tx.txHash||'';
+        whAdd({id:sig,chain:'sol',type,icon,label:w.name,wtype:w.type,amt:sol.toFixed(0),unit:'SOL',usd,from:isSend?w.addr:'unknown',to:isSend?'unknown':w.addr,frL:isSend?w.name:null,toL:isSend?null:w.name,isSend,hash:sig,url:'https://solscan.io/tx/'+sig});
+      }
+      await whSleep(300);
+    }catch(e){await whSleep(200);}
+  }
+}
+
+function whIsNew(addr,usd){
+  if(usd<500000||_whSeen.has(addr))return false;
+  _whSeen.add(addr);
+  return true;
+}
+function whAcc(addr,amt){
+  const now=Date.now();
+  if(!_whAcc[addr])_whAcc[addr]=[];
+  _whAcc[addr].push({t:now,v:amt});
+  _whAcc[addr]=_whAcc[addr].filter(x=>now-x.t<86400000);
+  return _whAcc[addr].length>=3;
+}
+
+async function whAdd(item){
+  item.time=new Date().toLocaleTimeString('ko-KR');
+  _whFeed.unshift(item);
+  _whStats.total++;
+  if(item.type==='foundation')_whStats.found++;
+  else if(item.type==='sell')_whStats.sell++;
+  else if(['buy','acc'].includes(item.type))_whStats.buy++;
+  else if(item.type==='sleep')_whStats.sleep++;
+  else if(item.type==='newwhale')_whStats.newW++;
+  whUpdStats();whRenderFeed();
+  if(_whCfg.bot&&_whCfg.paid)whSendTG(_whCfg.paid,whMsg(item,'실시간'));
+  if(_whCfg.bot&&_whCfg.free)_whDQ.push({chatId:_whCfg.free,msg:whMsg(item,'1시간 전'),at:Date.now()+3600000});
+}
+
+function whMsg(item,tier){
+  const e={buy:'🟢',sell:'🔴',acc:'🟠',sleep:'💤',newwhale:'🆕',foundation:'⚠️',flow:'🔄'}[item.type]||'⚪';
+  const c={eth:'Ξ',btc:'₿',sol:'◎',egg:'🥚'}[item.chain]||'';
+  return e+' ['+tier+'] *'+item.label+'*\n\n'+c+' '+item.amt+' '+item.unit+(item.usd>0?' (~$'+item.usd.toLocaleString()+')':'')+'\n'+(item.isSend?'📤 송금':'📥 수신')+(item.frL?'\n출처: '+item.frL:'')+(item.toL?'\n수신: '+item.toL:'')+'\n\n[확인]('+item.url+')';
+}
+
+async function whSendTG(chatId,text){
+  try{await fetch('https://api.telegram.org/bot'+_whCfg.bot+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text,parse_mode:'Markdown',disable_web_page_preview:true})});}catch(e){}
+}
+
+function whDQ(){
+  const now=Date.now();
+  _whDQ.filter(q=>q.at<=now).forEach(q=>whSendTG(q.chatId,q.msg));
+  _whDQ=_whDQ.filter(q=>q.at>now);
+}
+
+function whRenderFeed(){
+  const el=document.getElementById('wh-feed');
+  const emp=document.getElementById('wh-empty');
+  if(!el)return;
+  let v=_whFeed;
+  if(_whChain!=='all')v=v.filter(i=>i.chain===_whChain);
+  if(_whSig!=='all')v=v.filter(i=>i.type===_whSig);
+  if(v.length&&emp)emp.style.display='none';
+  el.querySelectorAll('.wh-card').forEach(e=>e.remove());
+  const tL={buy:'🟢 매수',sell:'🔴 매도',acc:'🟠 매집',sleep:'💤 수면지갑',newwhale:'🆕 신규고래',foundation:'⚠️ 재단이동',flow:'🔄 대형이동'};
+  v.slice(0,60).forEach(item=>{
+    const div=document.createElement('div');
+    div.className='wh-card '+item.type;
+    const f=(item.from&&item.from!=='unknown')?item.from:'';
+    const t=(item.to&&item.to!=='unknown')?item.to:'';
+    const frS=item.frL?'<span class="wh-tg exchange">'+item.frL+'</span>':f?'<span class="wh-addr">'+f.slice(0,8)+'...'+f.slice(-4)+'</span>':'';
+    const toS=item.toL?'<span class="wh-tg exchange">'+item.toL+'</span>':t?'<span class="wh-addr">'+t.slice(0,8)+'...'+t.slice(-4)+'</span>':'';
+    div.innerHTML='<div class="wh-ch"><div style="display:flex;align-items:center;gap:6px"><span class="wh-cd '+item.chain+'"></span><span class="wh-cn '+item.type+'">'+item.icon+' '+item.label+'</span><span class="wh-tg '+item.wtype+'" style="font-size:8px">'+item.wtype+'</span></div><div class="wh-cm"><span class="wh-cb '+item.chain+'">'+item.chain.toUpperCase()+'</span><span class="wh-ct">'+item.time+'</span></div></div><div class="wh-body"><div class="wh-ac"><div class="wh-am '+item.type+'">'+item.amt+' <span style="font-size:12px">'+item.unit+'</span></div>'+(item.usd>0?'<div class="wh-usd">≈ $'+item.usd.toLocaleString()+'</div>':'')+'<span class="wh-badge '+item.type+'">'+(tL[item.type]||item.type)+'</span></div><div class="wh-info"><div class="wh-fl">'+frS+'<span style="color:var(--border)">→</span>'+toS+'</div><a class="wh-link" href="'+item.url+'" target="_blank">→ 블록체인 탐색기에서 확인</a></div></div>';
+    el.insertBefore(div,el.children[1]||null);
+  });
+}
+
+function whUpdStats(){
+  const ids=['wst-total','wst-found','wst-sell','wst-buy','wst-sleep','wst-new'];
+  const vals=[_whStats.total,_whStats.found,_whStats.sell,_whStats.buy,_whStats.sleep,_whStats.newW];
+  ids.forEach((id,i)=>{const e=document.getElementById(id);if(e)e.textContent=vals[i];});
+}
+
+function whSetChain(c,btn){_whChain=c;document.querySelectorAll('.wh-ctab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');whRenderFeed();}
+function whSetSig(s,btn){_whSig=s;document.querySelectorAll('.wh-sf').forEach(b=>b.classList.remove('on'));btn.classList.add('on');whRenderFeed();}
+
+function whSetDot(t,txt){
+  const d=document.getElementById('wh-dot');
+  if(!d)return;
+  d.className='wh-dot'+(t==='on'?' on':t==='spin'?' spin':'');
+  const s=document.getElementById('wh-ptxt');
+  if(s){s.textContent=txt;s.style.color=t==='on'?'var(--green)':t==='spin'?'var(--gold)':'var(--muted)';}
+}
+
+function whFmt(n){if(n>=1e8)return(n/1e8).toFixed(1)+'억';if(n>=1e7)return(n/1e7).toFixed(1)+'천만';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(0)+'K';return Math.round(n).toLocaleString();}
+function whSleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function whOpenCfg(){
+  document.getElementById('wh-m-bot').value=_whCfg.bot||'';
+  document.getElementById('wh-m-free').value=_whCfg.free||'';
+  document.getElementById('wh-m-paid').value=_whCfg.paid||'';
+  document.getElementById('wh-modal').style.display='flex';
+}
+function whCloseCfg(){document.getElementById('wh-modal').style.display='none';}
+function whSaveCfg(){
+  _whCfg.bot=document.getElementById('wh-m-bot').value.trim();
+  _whCfg.free=document.getElementById('wh-m-free').value.trim();
+  _whCfg.paid=document.getElementById('wh-m-paid').value.trim();
+  localStorage.setItem('_wh_cfg',JSON.stringify(_whCfg));
+  whCloseCfg();
+}
+async function whTestTg(type){
+  const token=document.getElementById('wh-m-bot').value.trim();
+  const chatId=document.getElementById(type==='free'?'wh-m-free':'wh-m-paid').value.trim();
+  if(!token||!chatId){alert('토큰과 Chat ID를 입력하세요');return;}
+  try{await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text:'✅ CoinWiki 고래 추적기 연결 성공!'})});alert('✅ 전송 성공');}catch(e){alert('오류: '+e.message);}
+}
+document.getElementById('wh-modal').addEventListener('click',function(e){if(e.target===this)whCloseCfg();});
+</script>
+</body>
+</html>
